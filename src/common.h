@@ -119,7 +119,7 @@ typedef struct http_server_s {
   int timerfd;
   socklen_t len;
   void (*request_handler)(http_request_t *);
-  struct sockaddr_in addr;
+  struct sockaddr_in6 addr;
   void *data;
   char date[32];
 } http_server_t;

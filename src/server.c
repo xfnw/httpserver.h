@@ -19,16 +19,16 @@
 #include "server.h"
 #endif
 
-void _hs_bind_localhost(int s, struct sockaddr_in *addr, const char *ipaddr,
+void _hs_bind_localhost(int s, struct sockaddr_in6 *addr, const char *ipaddr,
                         int port) {
-  addr->sin_family = AF_INET;
+  addr->sin6_family = AF_INET6;
   if (ipaddr == NULL) {
-    addr->sin_addr.s_addr = INADDR_ANY;
+    addr->sin6_addr = in6addr_any;
   } else {
-    addr->sin_addr.s_addr = inet_addr(ipaddr);
+    inet_pton(AF_INET6, ipaddr, addr->sin6_addr.s6_addr);
   }
-  addr->sin_port = htons(port);
-  int rc = bind(s, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
+  addr->sin6_port = htons(port);
+  int rc = bind(s, (struct sockaddr *)addr, sizeof(struct sockaddr_in6));
   if (rc < 0) {
     exit(1);
   }
@@ -131,7 +131,7 @@ int hs_server_poll_events(http_server_t *serv) {
 void hs_server_listen_on_addr(http_server_t *serv, const char *ipaddr) {
   // Ignore SIGPIPE. We handle these errors at the call site.
   signal(SIGPIPE, SIG_IGN);
-  serv->socket = socket(AF_INET, SOCK_STREAM, 0);
+  serv->socket = socket(AF_INET6, SOCK_STREAM, 0);
   int flag = 1;
   setsockopt(serv->socket, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
   _hs_bind_localhost(serv->socket, &serv->addr, ipaddr, serv->port);
